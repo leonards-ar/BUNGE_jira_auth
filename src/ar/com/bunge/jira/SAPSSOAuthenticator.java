@@ -42,8 +42,7 @@ public class SAPSSOAuthenticator extends DefaultAuthenticator {
 	 * @return
 	 * @see com.atlassian.seraph.auth.DefaultAuthenticator#getUser(javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
 	 */
-    public Principal getUser(HttpServletRequest request, HttpServletResponse response)
-    {
+    public Principal getUser(HttpServletRequest request, HttpServletResponse response) {
         Principal user = null;
 
         try {
@@ -51,7 +50,12 @@ public class SAPSSOAuthenticator extends DefaultAuthenticator {
                 LOG.info("Session found. User already logged in");
                 user = (Principal) request.getSession().getAttribute(DefaultAuthenticator.LOGGED_IN_KEY);
             } else {
-            		String username = new SAPSSOTicket().getLoggedUsername(request, response);
+            		// First check HTTP Header and then SSO Ticket
+            		String username = getUsernameFromHTTPHeader(request, response);
+            		if(username == null) {
+            			username = getUsernameFromTicket(request, response);
+            		}
+            		
                     if (username != null) {
                         user = getUser(username);
                         LOG.info("Logged in via SSO, with user " + user);
@@ -69,4 +73,49 @@ public class SAPSSOAuthenticator extends DefaultAuthenticator {
         return user;
     }
 	
+    /**
+     * 
+     * @param request
+     * @param response
+     * @return
+     */
+    private String getUsernameFromHTTPHeader(HttpServletRequest request, HttpServletResponse response) {
+    	String headerParam = SAPSSOConfiguration.instance().getUserHttpHeaderParameterName();
+
+    	
+    	if(headerParam != null && headerParam.trim().length() > 0) {
+        	LOG.debug("About to check SSO information in HTTP Header + [" + headerParam + "]");
+    		String value = request.getHeader(headerParam);
+    		if(value != null && value.trim().length() > 0) {
+    			LOG.debug("Found HTTP Header Parameter [" + headerParam + "] with value [" + value + "]");
+    			return value;
+    		} else {
+    			LOG.info("HTTP Header Parameter [" + headerParam + "] not found in request");
+    			return null;
+    		}
+    	} else {
+    		LOG.debug("No SSO HTTP Header configuration found");
+    		return null;
+    	}
+    }
+
+    /**
+     * 
+     * @param request
+     * @param response
+     * @return
+     * @throws Exception
+     */
+    private String getUsernameFromTicket(HttpServletRequest request, HttpServletResponse response) throws Exception {
+    	LOG.debug("About to check SSO information SAP SSO Cookie");
+    	String username = new SAPSSOTicket().getLoggedUsername(request, response);
+    	
+    	if(username != null && username.trim().length() > 0) {
+    		LOG.debug("Found user [" + username + "] in SAP SSO Ticket");
+    		return username;
+    	} else {
+    		LOG.debug("SAP SSO Ticket not found or not logon user present");
+    		return null;
+    	}
+    }
 }

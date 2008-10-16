@@ -5,6 +5,9 @@
  */
 package ar.com.bunge.jira;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -134,7 +137,7 @@ public class SAPSSOTicket {
      */
     private Ticket parseTicket(String ticket) throws Exception {
     	try {
-    		Object elements[] = evalLogonTicket (ticket, "SAPdefault", null);
+    		Object elements[] = evalLogonTicket (ticket, getPSEFile(), SAPSSOConfiguration.instance().getPSEPassword());
     		Ticket t = new Ticket();
     		t.setUser((String)elements[0]);
     		t.setIssuingSystemId((String)elements[1]);
@@ -169,4 +172,43 @@ public class SAPSSOTicket {
     		return null;
     	}
     }
+    
+    /**
+     * 
+     * @return
+     */
+    private String getPSEFile() {
+    	String pseConfig = SAPSSOConfiguration.instance().getPublicKeyOfIssuingSystemPath();
+    	if(pseConfig == null || SAPSSOConfiguration.DEFAULT_PAB.equalsIgnoreCase(pseConfig)) {
+    		return pseConfig;
+    	} else {
+    		try {
+        		return getFullFilePath(pseConfig);
+    		} catch(FileNotFoundException ex) {
+    			LOG.error("File " + pseConfig + " not found", ex);
+    			return null;
+    		}
+    	}
+    }
+
+    /**
+     * 
+     * @param filename
+     * @return
+     * @throws FileNotFoundException
+     */
+	private String getFullFilePath(String filename) throws FileNotFoundException {
+		String path;
+		File file = new File(filename);
+
+		if( file.getAbsolutePath().toLowerCase().indexOf(".pse") > 0 ) {
+			path = file.getAbsolutePath();
+		} else {
+			path = file.getAbsolutePath() + ".pse";
+		}
+		if(!new File(path).exists()) {
+			throw new FileNotFoundException("File "+ filename +" does not exists");
+		}
+		return path;            
+	}    
 }

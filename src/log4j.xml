@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+
+<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
+
+
+	<appender name="STDOUT" class="org.apache.log4j.ConsoleAppender">
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%d{ISO8601}]%10p %C{1} - %m%n" />
+		</layout>
+	</appender>
+
+
+	<appender name="log_append" class="org.apache.log4j.RollingFileAppender">
+		<param name="file" value="sapsso_ext.log" />
+		<param name="append" value="true" />
+		<param name="bufferedIO" value="false" />
+		<param name="maxFileSize" value="500MB" />
+		<param name="maxBackupIndex" value="5" />
+		<layout class="org.apache.log4j.PatternLayout">
+			<param name="ConversionPattern" value="[%d{ISO8601}]%10p %C{1} - %m%n" />
+		</layout>
+	</appender>
+
+	<logger name="message" additivity="false">
+		<level value="DEBUG" />
+		<appender-ref ref="log_append"/>
+	</logger>
+	
+	<logger name="ar.com.bunge.jira" additivity="false">
+		<level value="DEBUG"/>
+		<appender-ref ref="log_append"/>
+		<appender-ref ref="STDOUT"/>
+	</logger>
+
+	<root>
+		<priority value="WARN" />
+		<appender-ref ref="log_append" />
+	</root>
+</log4j:configuration>

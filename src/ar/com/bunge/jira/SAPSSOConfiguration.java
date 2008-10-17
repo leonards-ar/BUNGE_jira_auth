@@ -18,7 +18,6 @@ import org.apache.log4j.Logger;
  *
  */
 public class SAPSSOConfiguration {
-	public static final String DEFAULT_PAB = "SAPdefault";
 	
 	private static final Logger LOG = Logger.getLogger(SAPSSOConfiguration.class);	
 	
@@ -87,7 +86,7 @@ public class SAPSSOConfiguration {
 	 */
 	public String getPublicKeyOfIssuingSystemPath() {
 		String pab = getConfigutationParameter("sap.sso.pab_path");
-		return pab != null && pab.trim().length() > 0 ? pab : DEFAULT_PAB;
+		return pab != null && pab.trim().length() > 0 ? pab : SAPSSOTicket.DEFAULT_PAB;
 	}
 	
 	/**
@@ -98,4 +97,15 @@ public class SAPSSOConfiguration {
 		String psePwd = getConfigutationParameter("sap.sso.pse_password");
 		return psePwd != null && psePwd.trim().length() > 0 ? psePwd : null;
 	}
+
+	/**
+	 * 
+	 * @return
+	 */
+	public String getSAPSecuLibrary() {
+		String lib = getConfigutationParameter("sap.sso.secu_library");
+		return lib != null && lib.trim().length() > 0 ? lib : null;
+	}
+	
+	
 }

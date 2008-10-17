@@ -6,6 +6,7 @@
 package ar.com.bunge.jira;
 
 import java.security.Principal;
+import java.util.Enumeration;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -84,7 +85,9 @@ public class SAPSSOAuthenticator extends DefaultAuthenticator {
 
     	
     	if(headerParam != null && headerParam.trim().length() > 0) {
-        	LOG.debug("About to check SSO information in HTTP Header + [" + headerParam + "]");
+    		if(LOG.isDebugEnabled()) {
+            	LOG.debug("About to check HTTP Headers [" + getHeadersToPrint(request) + "] for SSO information hold in HTTP Header [" + headerParam + "]");
+    		}
     		String value = request.getHeader(headerParam);
     		if(value != null && value.trim().length() > 0) {
     			LOG.debug("Found HTTP Header Parameter [" + headerParam + "] with value [" + value + "]");
@@ -99,6 +102,23 @@ public class SAPSSOAuthenticator extends DefaultAuthenticator {
     	}
     }
 
+    /**
+     * 
+     * @return
+     */
+    private String getHeadersToPrint(HttpServletRequest request) {
+    	Object paramName;
+    	StringBuffer sb = new StringBuffer();
+    	for(Enumeration e = request.getHeaderNames(); e.hasMoreElements(); ) {
+    		paramName = e.nextElement();
+    		sb.append(paramName + "=" + request.getHeader(paramName.toString()));
+    		if(e.hasMoreElements()) {
+    			sb.append(", ");
+    		}
+    	}
+    	return sb.toString();
+    }
+    
     /**
      * 
      * @param request

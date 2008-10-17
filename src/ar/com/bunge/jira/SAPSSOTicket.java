@@ -27,22 +27,28 @@ public class SAPSSOTicket {
     public static final int ISSUER_CERT_SUBJECT = 0;
     public static final int ISSUER_CERT_ISSUER = 1;
     public static final int ISSUER_CERT_SERIALNO = 2;
-		
+	
+	public static final String DEFAULT_PAB = "SAPdefault";
+
     private static boolean initialized = false;
-    public static String SECLIBRARY ;
+    public static String SECLIBRARY = SAPSSOConfiguration.instance().getSAPSecuLibrary();
     public static String SSO2TICKETLIBRARY = "sapssoext";
     
     public static final String SAP_COOKIE_NAME = "MYSAPSSO2";
     
     static {
-        if (System.getProperty("os.name").startsWith("Win"))  {
-            SECLIBRARY = "sapsecu.dll";
-        } else {
-            SECLIBRARY = "libsapsecu.so";
-        }
+    	if(SECLIBRARY == null) {
+            if (System.getProperty("os.name").startsWith("Win"))  {
+                SECLIBRARY = "sapsecu.dll";
+            } else {
+                SECLIBRARY = "libsapsecu.so";
+            }
+    	}
+        LOG.debug("SECLIBRARY [" + SECLIBRARY + "] configured");
+
         try {
             System.loadLibrary(SSO2TICKETLIBRARY); 
-            LOG.info("SAPSSOEXT loaded.");
+            LOG.debug("SAPSSOEXT Library [" + SSO2TICKETLIBRARY + "] loaded.");
         } catch (Throwable ex) {
         	LOG.error("Error during initialization of SSO2TICKET: " + ex.getMessage(), ex);
         }
@@ -128,6 +134,18 @@ public class SAPSSOTicket {
 		}
     	return null;
     }
+
+    /**
+     * 
+     * @throws Exception
+     */
+    private void initSAPSSO() throws Exception {
+		if( !init(SECLIBRARY)) {
+			LOG.error("Could not load library: " + SECLIBRARY);
+		} else {
+			LOG.debug("SEC library [" + SECLIBRARY + "] loaded");
+		}
+    }
     
     /**
      * 
@@ -137,6 +155,7 @@ public class SAPSSOTicket {
      */
     private Ticket parseTicket(String ticket) throws Exception {
     	try {
+    		initSAPSSO();
     		Object elements[] = evalLogonTicket (ticket, getPSEFile(), SAPSSOConfiguration.instance().getPSEPassword());
     		Ticket t = new Ticket();
     		t.setUser((String)elements[0]);
@@ -179,7 +198,7 @@ public class SAPSSOTicket {
      */
     private String getPSEFile() {
     	String pseConfig = SAPSSOConfiguration.instance().getPublicKeyOfIssuingSystemPath();
-    	if(pseConfig == null || SAPSSOConfiguration.DEFAULT_PAB.equalsIgnoreCase(pseConfig)) {
+    	if(pseConfig == null || DEFAULT_PAB.equalsIgnoreCase(pseConfig)) {
     		return pseConfig;
     	} else {
     		try {

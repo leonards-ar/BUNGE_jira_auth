@@ -6,7 +6,11 @@
 package ar.com.bunge.jira;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Properties;
+import java.util.List;
+import java.util.StringTokenizer;
 
 import org.apache.log4j.Logger;
 
@@ -107,5 +111,22 @@ public class SAPSSOConfiguration {
 		return lib != null && lib.trim().length() > 0 ? lib : null;
 	}
 	
+	/**
+	 * 
+	 * @return
+	 */
+	public List getPrefixToRemove() {
+		String values = getConfigutationParameter("sap.sso.prefix_to_remove");
+		if(values != null && values.trim().length() > 0) {
+			StringTokenizer st = new StringTokenizer(values, "|");
+			List prefix = new ArrayList();
+			while(st.hasMoreTokens()) {
+				prefix.add(st.nextToken());
+			}
+			return prefix;
+		} else {
+			return Collections.EMPTY_LIST;
+		}
+	}
 	
 }

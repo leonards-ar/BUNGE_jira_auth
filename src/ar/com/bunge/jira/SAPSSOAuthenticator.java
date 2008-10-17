@@ -7,7 +7,9 @@ package ar.com.bunge.jira;
 
 import java.security.Principal;
 import java.util.Enumeration;
+import java.util.List;
 
+import javax.naming.ldap.PagedResultsResponseControl;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -30,6 +32,8 @@ public class SAPSSOAuthenticator extends DefaultAuthenticator {
 	
 	private static final Logger LOG = Logger.getLogger(SAPSSOAuthenticator.class);	
 
+	private static final List PREFIXES = SAPSSOConfiguration.instance().getPrefixToRemove();
+	
 	/**
 	 * 
 	 */
@@ -58,7 +62,7 @@ public class SAPSSOAuthenticator extends DefaultAuthenticator {
             		}
             		
                     if (username != null) {
-                        user = getUser(username);
+                        user = getUser(removePrefix(username));
                         LOG.info("Logged in via SSO, with user " + user);
                         request.getSession().setAttribute(DefaultAuthenticator.LOGGED_IN_KEY, user);
                         request.getSession().setAttribute(DefaultAuthenticator.LOGGED_OUT_KEY, null);
@@ -102,6 +106,32 @@ public class SAPSSOAuthenticator extends DefaultAuthenticator {
     	}
     }
 
+    /**
+     * 
+     * @param username
+     * @return
+     */
+    private String removePrefix(String username) {
+    	LOG.debug("About to remove prefix to username [" + username + "]");
+    	if(username != null && !PREFIXES.isEmpty()) {
+    		if(LOG.isDebugEnabled()) {
+    			LOG.debug("Configured prefixes to remove " + PREFIXES);
+    		}
+    		String aPrefix;
+    		for(int i = 0; i < PREFIXES.size(); i++) {
+    			aPrefix = (String) PREFIXES.get(0);
+    			if(username.startsWith(aPrefix)) {
+    				String newUsername = username.substring(aPrefix.length());
+    				if(LOG.isDebugEnabled()) {
+        				LOG.debug("Found matching prefix [" + aPrefix + "] in username [" + username + "] -> Returning [" + newUsername + "]");
+    				}
+    				return newUsername;
+    			}
+    		}
+    	}
+    	return username;
+    }
+    
     /**
      * 
      * @return

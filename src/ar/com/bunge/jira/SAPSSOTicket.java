@@ -116,17 +116,19 @@ public class SAPSSOTicket {
      */
     private String getSAPSSOTicket(HttpServletRequest request, HttpServletResponse response) {
     	Cookie[] cookies = request.getCookies();
-
-    	for(int i=0; i < cookies.length; i++) {
-    		if(LOG.isDebugEnabled()) {
-    			LOG.debug("Found cookie [" + cookies[i].getName() + "]");
-    		}
-    		if(SAP_COOKIE_NAME.equals(cookies[i].getName())) {
+    	
+    	if(cookies != null) {
+        	for(int i=0; i < cookies.length; i++) {
         		if(LOG.isDebugEnabled()) {
-        			LOG.debug("Found SAP SSO Ticket cookie with value [" + cookies[i].getValue() + "]");
+        			LOG.debug("Found cookie [" + cookies[i].getName() + "]");
         		}
-    			return cookies[i].getValue();
-    		}
+        		if(SAP_COOKIE_NAME.equals(cookies[i].getName())) {
+            		if(LOG.isDebugEnabled()) {
+            			LOG.debug("Found SAP SSO Ticket cookie with value [" + cookies[i].getValue() + "]");
+            		}
+        			return cookies[i].getValue();
+        		}
+        	}
     	}
 
     	if(LOG.isDebugEnabled()) {

@@ -128,5 +128,4 @@ public class SAPSSOConfiguration {
 			return Collections.EMPTY_LIST;
 		}
 	}
-	
 }

@@ -14,6 +14,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
+import com.mysap.sso.SSO2Ticket;
+
 /**
  *
  * @author <a href="mcapurro@gmail.com">Mariano Capurro</a>
@@ -24,18 +26,14 @@ import org.apache.log4j.Logger;
 public class SAPSSOTicket {
 	private static final Logger LOG = Logger.getLogger(SAPSSOTicket.class);	
 	
-    public static final int ISSUER_CERT_SUBJECT = 0;
-    public static final int ISSUER_CERT_ISSUER = 1;
-    public static final int ISSUER_CERT_SERIALNO = 2;
 	
 	public static final String DEFAULT_PAB = "SAPdefault";
 
-    private static boolean initialized = false;
     public static String SECLIBRARY = SAPSSOConfiguration.instance().getSAPSecuLibrary();
-    public static String SSO2TICKETLIBRARY = "sapssoext";
+
     
     public static final String SAP_COOKIE_NAME = "MYSAPSSO2";
-    
+
     static {
     	if(SECLIBRARY == null) {
             if (System.getProperty("os.name").startsWith("Win"))  {
@@ -45,15 +43,8 @@ public class SAPSSOTicket {
             }
     	}
         LOG.debug("SECLIBRARY [" + SECLIBRARY + "] configured");
-
-        try {
-            System.loadLibrary(SSO2TICKETLIBRARY); 
-            LOG.debug("SAPSSOEXT Library [" + SSO2TICKETLIBRARY + "] loaded.");
-        } catch (Throwable ex) {
-        	LOG.error("Error during initialization of SSO2TICKET: " + ex.getMessage(), ex);
-        }
     }
-
+    
 	/**
 	 * 
 	 */
@@ -61,53 +52,6 @@ public class SAPSSOTicket {
 	}
     
     
-    /**
-     * Initialization
-     * 
-     * @param seclib location of ssf-implemenation
-     * 
-     * @return true/false whether initailisation was ok
-     */
-    private static native synchronized boolean init(String seclib);
-
-    /**
-     * Returns internal version.
-     * 
-     * @return version
-     */
-    public static native synchronized String getVersion();
-    
-    /**
-     * eval ticket
-     * 
-     * @param ticket        the ticket
-     * @param pab           location of pab
-     * @param pab_password  password for access the pab
-     * 
-     * @return Object array with:
-     *         [0] = (String)user, [1] = (String)sysid, [2] = (String)client , [3] = (byte[])certificate
-     *         [4] = (String)portalUser, [5] = (String)authSchema, [6] = validity
-     *  
-     */
-    public static native synchronized Object[] evalLogonTicket(
-        String ticket,
-        String pab,
-        String pab_password)
-        throws Exception;
-    
-
-    /**
-     * Parse certificate
-     * @param cert 			Certificate received from evalLogonTicket
-     * @param info_id       One of the requst idŽs
-     * 
-     * @return Info string from certificate
-     *  
-     */
-    public static native synchronized String parseCertificate(
-        byte[] cert,
-        int info_id);
-
     /**
      * 
      * @param request
@@ -142,7 +86,7 @@ public class SAPSSOTicket {
      * @throws Exception
      */
     private void initSAPSSO() throws Exception {
-		if( !init(SECLIBRARY)) {
+		if( !SSO2Ticket.init(SECLIBRARY)) {
 			LOG.error("Could not load library: " + SECLIBRARY);
 		} else {
 			LOG.debug("SEC library [" + SECLIBRARY + "] loaded");
@@ -158,7 +102,7 @@ public class SAPSSOTicket {
     private Ticket parseTicket(String ticket) throws Exception {
     	try {
     		initSAPSSO();
-    		Object elements[] = evalLogonTicket (ticket, getPSEFile(), SAPSSOConfiguration.instance().getPSEPassword());
+    		Object elements[] = SSO2Ticket.evalLogonTicket (ticket, getPSEFile(), SAPSSOConfiguration.instance().getPSEPassword());
     		Ticket t = new Ticket();
     		t.setUser((String)elements[0]);
     		t.setIssuingSystemId((String)elements[1]);
@@ -183,7 +127,7 @@ public class SAPSSOTicket {
     	String ticket = getSAPSSOTicket(request, response);
     	if(ticket != null && ticket.trim().length() > 0) {
     		if(LOG.isDebugEnabled()) {
-            	LOG.debug("Ticket found. Start processing with ticket library version [" + getVersion() + "]");
+            	LOG.debug("Ticket found. Start processing with ticket library version [" + SSO2Ticket.getVersion() + "]");
     		}
     		Ticket t = parseTicket(ticket);
     		LOG.debug("Ticket parsed -> " + t);

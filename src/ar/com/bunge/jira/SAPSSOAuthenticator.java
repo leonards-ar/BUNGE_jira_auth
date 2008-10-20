@@ -161,8 +161,10 @@ public class SAPSSOAuthenticator extends DefaultAuthenticator {
     	String username = new SAPSSOTicket().getLoggedUsername(request, response);
     	
     	if(username != null && username.trim().length() > 0) {
-    		LOG.debug("Found user [" + username + "] in SAP SSO Ticket");
-    		return username;
+    		if(LOG.isDebugEnabled()) {
+        		LOG.debug("Found user [" + username + "] in SAP SSO Ticket. In lower case [" + username.toLowerCase() + "]");
+    		}
+    		return username.toLowerCase();
     	} else {
     		LOG.debug("SAP SSO Ticket not found or not logon user present");
     		return null;

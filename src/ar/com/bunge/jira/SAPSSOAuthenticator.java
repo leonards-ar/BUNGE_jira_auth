@@ -119,7 +119,7 @@ public class SAPSSOAuthenticator extends DefaultAuthenticator {
     		}
     		String aPrefix;
     		for(int i = 0; i < PREFIXES.size(); i++) {
-    			aPrefix = (String) PREFIXES.get(0);
+    			aPrefix = (String) PREFIXES.get(i);
     			if(username.startsWith(aPrefix)) {
     				String newUsername = username.substring(aPrefix.length());
     				if(LOG.isDebugEnabled()) {

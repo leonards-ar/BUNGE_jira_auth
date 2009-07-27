@@ -9,7 +9,6 @@ import java.security.Principal;
 import java.util.Enumeration;
 import java.util.List;
 
-import javax.naming.ldap.PagedResultsResponseControl;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 

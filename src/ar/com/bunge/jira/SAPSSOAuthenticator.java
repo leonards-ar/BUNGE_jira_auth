@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 
+import com.atlassian.jira.security.login.JiraSeraphAuthenticator;
 import com.atlassian.seraph.auth.DefaultAuthenticator;
 
 /**
@@ -23,7 +24,7 @@ import com.atlassian.seraph.auth.DefaultAuthenticator;
  * @since JIRA AUHT 1.0
  *
  */
-public class SAPSSOAuthenticator extends DefaultAuthenticator {
+public class SAPSSOAuthenticator extends JiraSeraphAuthenticator {
 	/**
 	 * 
 	 */

@@ -144,11 +144,15 @@ public class SAPSSOTicket {
      */
     private String getPSEFile() {
     	String pseConfig = SAPSSOConfiguration.instance().getPublicKeyOfIssuingSystemPath();
+    	LOG.debug("Found pseConfig " + pseConfig);
     	if(pseConfig == null || DEFAULT_PAB.equalsIgnoreCase(pseConfig)) {
+    		LOG.debug("Using default value: " + DEFAULT_PAB);
     		return pseConfig;
     	} else {
     		try {
-        		return getFullFilePath(pseConfig);
+    			String fullFilePath = getFullFilePath(pseConfig);
+    			LOG.debug("Using pseConfig file from: " + fullFilePath);
+        		return fullFilePath;
     		} catch(FileNotFoundException ex) {
     			LOG.error("File " + pseConfig + " not found", ex);
     			return null;
